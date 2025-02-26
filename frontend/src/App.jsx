@@ -6,7 +6,7 @@ function App() {
   const [img, setimg] = useState(null);
   const [nums, setNums] = useState(null);
   
-  const handleSubmit = async () => {
+  const handleSubmitParse = async () => {
     if (!img) {
       alert('Please select an image');
       return;
@@ -33,33 +33,67 @@ function App() {
     }
   };
 
+  const handleSubmitSolve = async () => {
+    if (!nums) {
+      alert('First Parse the Image');
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:5000/solve?puzzle=${nums}`, {
+        method: 'GET',
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success == true) {
+          setNums(data.solution);
+        }
+        console.log(data.solution)
+        console.log('Success:', data);
+      } else {
+        console.error('Error:', response.status);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+
+  const handleClear = () =>{
+    setNums(null);
+    setimg(null);
+  }
+
   return (
     <>
       <h1>Upload a Puzzle</h1>
       {img && (
         <div>
           <img
-            alt='not found'
+            alt='Sudoku Puzzle'
             width={"250px"}
             src={URL.createObjectURL(img)}
           />
           <br /> <br />
-          <button onClick={() => setimg(null)}>Remove</button>
-          <button onClick={handleSubmit}>Solve</button>
+          <button onClick={handleClear}>Clear</button>
+          <button onClick={handleSubmitParse}>Parse</button>
+          {nums && (<button onClick={handleSubmitSolve}>Solve</button>)}
         </div>
       )}
 
       <br />
-
-      <input
-        type='file'
-        name='sudokuImage'
-        onChange={(event) => {
-          console.log(event.target.files[0]);
-          setimg(event.target.files[0]);
-        }} />
+      
+      {nums ? <h2>Click on a cell to edit the number</h2> : (
+        <input
+          type='file'
+          name='sudokuImage'
+          onChange={(event) => {
+            console.log(event.target.files[0]);
+            setimg(event.target.files[0]);
+          }} />
+      )}
       {nums && (
-        <Grid nums={nums}/>
+        <Grid nums={nums} setNums={setNums}/>
       )}
     </>
 
