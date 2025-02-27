@@ -5,6 +5,7 @@ import Grid from './components/Grid';
 function App() {
   const [img, setimg] = useState(null);
   const [nums, setNums] = useState(null);
+  const API_BASE_URL = import.meta.env.VITE_API_URL;
   
   const handleSubmitParse = async () => {
     if (!img) {
@@ -16,7 +17,7 @@ function App() {
     formData.append('image', img);
 
     try {
-      const response = await fetch('http://localhost:5000/parse_img', {
+      const response = await fetch(`${API_BASE_URL}/parse_img`, {
         method: 'POST',
         body: formData,
       });
@@ -40,7 +41,7 @@ function App() {
     }
 
     try {
-      const response = await fetch(`http://localhost:5000/solve?puzzle=${nums}`, {
+      const response = await fetch(`${API_BASE_URL}/solve?puzzle=${nums}`, {
         method: 'GET',
       });
 
