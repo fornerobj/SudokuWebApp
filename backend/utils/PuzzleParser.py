@@ -2,6 +2,7 @@ import cv2 as cv2
 from imutils import contours
 from pytesseract import image_to_string
 import numpy as np
+from PIL import Image
 
 def parsePuzzle(image):
         img = cv2.imdecode(image, cv2.IMREAD_COLOR)
@@ -47,6 +48,9 @@ def parsePuzzle(image):
                 cv2.drawContours(mask, [c], -1, (255,255,255), -1)
                 result = cv2.bitwise_and(img, mask)
                 result[mask==0] = 255
+                result = Image.fromarray(result)
+                if result.mode not in ('L', 'RGB'):
+                    result = result.convert('RGB')
                 dig = image_to_string(result, config='--psm 10')
                 dig = dig.strip()
                 if(dig.isdigit()):
