@@ -33,9 +33,6 @@ def isOK(grid, r, c, n):
     return True
 
 def solvePuzzle(grid, r=0, c=0): 
-    print("Current grid")
-    for row in grid:
-        print(row)
     if r == 9:
         return True
 
