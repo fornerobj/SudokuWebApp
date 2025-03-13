@@ -5,6 +5,7 @@ import Grid from './components/Grid';
 function App() {
   const [img, setimg] = useState(null);
   const [nums, setNums] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
   const API_BASE_URL = import.meta.env.VITE_API_URL;
   
   const handleSubmitParse = async () => {
@@ -17,6 +18,7 @@ function App() {
     formData.append('image', img);
 
     try {
+      setIsLoading(true);
       const response = await fetch(`${API_BASE_URL}/parse_img`, {
         method: 'POST',
         body: formData,
@@ -31,6 +33,8 @@ function App() {
       }
     } catch (error) {
       console.error('Error:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -77,14 +81,26 @@ function App() {
           />
           <br /> <br />
           <button onClick={handleClear}>Clear</button>
-          <button onClick={handleSubmitParse}>Parse</button>
+          <button 
+            onClick={handleSubmitParse}
+            disabled={isLoading}
+          >
+            {isLoading && !nums ? 'Parsing...' : 'Parse'}
+          </button>
           {nums && (<button onClick={handleSubmitSolve}>Solve</button>)}
         </div>
       )}
 
       <br />
-      
-      {nums ? <h2>Click on a cell to edit the number</h2> : (
+
+      {isLoading && !nums && (
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <p>Processing image, please wait...</p>
+        </div>
+      )}
+
+      {!isLoading && !nums ? (
         <input
           type='file'
           name='sudokuImage'
@@ -92,12 +108,14 @@ function App() {
             console.log(event.target.files[0]);
             setimg(event.target.files[0]);
           }} />
+      ) : !isLoading && (
+        <h2>Tap on a cell to edit the number</h2>
       )}
+
       {nums && (
         <Grid nums={nums} setNums={setNums}/>
       )}
     </>
-
   )
 }
 

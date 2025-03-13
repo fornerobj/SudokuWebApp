@@ -40,3 +40,33 @@
 .read-the-docs {
   color: #888;
 }
+
+/* New styles for buttons and loading state */
+button {
+  margin: 0 5px;
+  position: relative;
+}
+
+button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+@media (max-width: 500px) {
+  #root {
+    padding: 1rem;
+  }
+  
+  h1 {
+    font-size: 2em;
+  }
+  
+  h2 {
+    font-size: 1.2em;
+  }
+  
+  button {
+    padding: 0.5em 1em;
+    margin: 0 3px;
+  }
+}
