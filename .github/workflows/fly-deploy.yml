@@ -5,6 +5,8 @@ on:
   push:
     branches:
       - main
+    paths:
+      - "backend/**"  # Only trigger on changes inside /backend
 jobs:
   deploy:
     name: Deploy app
