@@ -1,11 +1,32 @@
 import cv2 as cv2
+import sys
 from imutils import contours
 from pytesseract import image_to_string
 import numpy as np
 from PIL import Image
 
 def parsePuzzle(image):
+    try:
         img = cv2.imdecode(image, cv2.IMREAD_COLOR)
+        if img is None:
+            print("Failed to decode image")
+            sys.stdout.flush()
+            return "0" * 81
+
+        print(f"Image shape: {img.shape}")
+        sys.stdout.flush()
+
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+
+        max_dimension = 600
+        height, width = img.shape[:2]
+        if height > max_dimension or width > max_dimension:
+            scale = max_dimension / max(height, width)
+            img = cv2.resize(img, (int(width * scale), int(height * scale)))
+            print(f"Resized image to: {img.shape}")
+            sys.stdout.flush()
+        
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         thresh = cv2.adaptiveThreshold(gray,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV,57,5)
 
@@ -44,18 +65,36 @@ def parsePuzzle(image):
         sudoku_string = ""
         for row in sudoku_rows:
             for c in row:
-                mask = np.zeros(img.shape, dtype=np.uint8)
-                cv2.drawContours(mask, [c], -1, (255,255,255), -1)
-                result = cv2.bitwise_and(img, mask)
-                result[mask==0] = 255
-                result = Image.fromarray(result)
-                if result.mode not in ('L', 'RGB'):
-                    result = result.convert('RGB')
-                dig = image_to_string(result, config='--psm 10')
-                dig = dig.strip()
-                if(dig.isdigit()):
-                  sudoku_string += dig
-                else:
-                  sudoku_string += "0"
+                try:
+                    mask = np.zeros(img.shape, dtype=np.uint8)
+                    cv2.drawContours(mask, [c], -1, (255,255,255), -1)
+                    result = cv2.bitwise_and(img, mask)
+                    result[mask==0] = 255
+
+                    result_pil = Image.fromarray(result)
+
+                    dig = image_to_string(result_pil, config='--psm 10')
+                    dig = dig.strip()
+
+                    if(dig.isdigit()):
+                      sudoku_string += dig
+                    else:
+                      sudoku_string += "0"
+                except Exception as cell_error:
+                    print(f"Error processing cell: {str(cell_error)}")
+                    sys.stdout.flush()
+                    sudoku_string += "0"  # Use 0 for cells that fail
         
+        if len(sudoku_string) != 81:
+            print(f"Generated string length: {len(sudoku_string)}")
+            sys.stdout.flush()
+            if len(sudoku_string) < 81:
+                sudoku_string += "0" * (81 - len(sudoku_string))
+            else:
+                sudoku_string = sudoku_string[:81]
+
         return sudoku_string
+    except Exception as e:
+        print(f"Error processing image: {str(e)}")
+        sys.stdout.flush()
+        return "0" * 81  # Return empty puzzle

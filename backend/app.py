@@ -14,20 +14,29 @@ def hello():
 
 @app.route("/parse_img", methods=['POST'])
 def parse():
-        if 'image' not in request.files:
-                return 'No image in request', 400
-        
-        image_file = request.files['image']
+        try: 
+                if 'image' not in request.files:
+                        return 'No image in request', 400
+                
+                image_file = request.files['image']
 
-        if image_file.filename == '':
-                return 'No image selected', 400
-        
-        image_data = image_file.read()
-        img = np.frombuffer(image_data, np.uint8)
+                if image_file.filename == '':
+                        return 'No image selected', 400
+                
+                file_info = {
+                        "filename": image_file.filename,
+                        "content_type": image_file.content_type
+                }
+                print(f"Processing file {file_info}")
 
-        nums = parsePuzzle(img)
+                image_data = image_file.read()
+                img = np.frombuffer(image_data, np.uint8)
 
-        return jsonify(nums=nums), 200
+                nums = parsePuzzle(img)
+
+                return jsonify(nums=nums), 200
+        except Exception as e:
+                return jsonify(error=str(e)), 500
 
 @app.route('/solve')
 def solve():
